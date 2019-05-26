@@ -5,6 +5,7 @@ import com.shivangshu.multilift.commons.LiftStore;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
 import com.shivangshu.multilift.controller.request.InternalRequest;
 import com.shivangshu.multilift.errors.LiftNotFoundException;
+import com.shivangshu.multilift.errors.UnknownLiftStatusError;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,5 +43,21 @@ public class LiftMain {
             }
         }
         throw new LiftNotFoundException("Lift with Id {} " + id + " does not exists");
+    }
+
+    public void updateLiftFloorChange(String id, String floor) {
+        for(Lift l : totalLifts) {
+            if(l.getId() == Integer.valueOf(id)) {
+                l.updateCurrentFloor(Integer.valueOf(floor));
+            }
+        }
+    }
+
+    public void updateLiftDirection(String id, String direction) throws UnknownLiftStatusError {
+        for(Lift lift : totalLifts) {
+            if(lift.getId() == Integer.valueOf(id)) {
+                lift.updateDirection(direction);
+            }
+        }
     }
 }

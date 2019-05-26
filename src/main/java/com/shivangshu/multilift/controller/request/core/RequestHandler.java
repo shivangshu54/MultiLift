@@ -1,6 +1,9 @@
 package com.shivangshu.multilift.controller.request.core;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.shivangshu.multilift.commons.Lift;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
 import com.shivangshu.multilift.controller.request.InternalRequest;
 import com.shivangshu.multilift.service.LiftMain;
@@ -31,6 +34,23 @@ public class RequestHandler {
     public void addInternalRequest(@RequestBody String payload) {
         InternalRequest internalRequest = gson.fromJson(payload, InternalRequest.class);
             liftMain.addInternalRequests(internalRequest);
+    }
+
+    @RequestMapping(value = "/lift/floorchange", method = RequestMethod.POST)
+    public void updateLiftFloorChange(@RequestBody String payload) {
+        JsonObject floorChangeObject = new JsonParser().parse(payload).getAsJsonObject();
+        String id = floorChangeObject.get("id").getAsString();
+        String floor = floorChangeObject.get("floor").getAsString();
+        liftMain.updateLiftFloorChange(id, floor);
+
+    }
+
+    @RequestMapping(value = "/lift/directionchange", method = RequestMethod.POST)
+    public void updateLiftDirection(@RequestBody String payload) {
+        JsonObject directionChangeObject = new JsonParser().parse(payload).getAsJsonObject();
+        String id = directionChangeObject.get("id").getAsString();
+        String direction = directionChangeObject.get("direction").getAsString();
+        liftMain.updateLiftDirection(id, direction);
     }
 
 //    public ExternalRequest getExternalRequests() {

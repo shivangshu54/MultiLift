@@ -1,20 +1,22 @@
 package com.shivangshu.multilift.service;
 
 import com.shivangshu.multilift.commons.Lift;
-import com.shivangshu.multilift.commons.LiftPosition;
 import com.shivangshu.multilift.commons.LiftStatus;
 import com.shivangshu.multilift.commons.LiftStore;
+import com.shivangshu.multilift.commons.RequestedDirection;
+import com.shivangshu.multilift.controller.request.ExternalRequest;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import static com.shivangshu.multilift.commons.RequestedDirection.DOWN;
+import static com.shivangshu.multilift.commons.RequestedDirection.UP;
 
 public class LiftAssigner {
 
     private static final List<Lift> liftsInService = LiftStore.INSTANCE.getLifts();
     private static final int TOTAL_LIFTS = liftsInService.size();
-    private static int idleLifts = 0;
+    private static int idleLifts = TOTAL_LIFTS;
     private static List<Lift> liftsBelowRequestedFloor = new ArrayList<>();
     private static List<Lift> liftsAboveRequestedFloor = new ArrayList<>();
     private static List<Lift> liftsAtSameFloor = new ArrayList<>();
@@ -50,6 +52,7 @@ public class LiftAssigner {
                 liftsAboveMovingDown.add(lift);
             }
         }
+        idleLifts -= liftsAboveMovingDown.size();
         return liftsAboveMovingDown;
     }
 
@@ -60,6 +63,7 @@ public class LiftAssigner {
                 liftsAboveMovingUp.add(lift);
             }
         }
+        idleLifts -= liftsAboveMovingUp.size();
         return liftsAboveMovingUp;
     }
 
@@ -80,6 +84,7 @@ public class LiftAssigner {
                 liftsBelowAndMovingDown.add(lift);
             }
         }
+        idleLifts -= liftsBelowAndMovingDown.size();
         return liftsBelowAndMovingDown;
     }
 
@@ -90,34 +95,115 @@ public class LiftAssigner {
                 liftsBelowAndMovingUp.add(lift);
             }
         }
+        idleLifts -= liftsBelowAndMovingUp.size();
         return liftsBelowAndMovingUp;
     }
 
-    private int getDistanceToRequestedFloor(int requestedFloor, Lift lift) {
-        switch (lift.getStatus()) {
-            case LiftStatus.MOVING_UP: {
-                if (requestedFloor >= lift.getCurrentFloor()) {
-                    return Math.abs(requestedFloor - lift.getCurrentFloor());
-                } else return Math.abs((lift.getFloorRequestsGoingUp().last() - lift.getCurrentFloor()) +
-                        (lift.getFloorRequestsGoingUp().last() - requestedFloor));
-            }
-
-            case LiftStatus.MOVING_DOWN: {
-                if (requestedFloor <= lift.getCurrentFloor()) {
-                    return Math.abs(lift.getCurrentFloor() - requestedFloor);
-                } else {
-                    return Math.abs((lift.getCurrentFloor() - lift.getFloorRequestGoingDown().last()) +
-                            (requestedFloor - lift.getFloorRequestGoingDown().last()));
-                }
-            }
-            case LiftStatus.IDLE: {
-                return Math.abs(requestedFloor - lift.getCurrentFloor());
-            }
-
-        }
+    //implement
+    private List<Lift> getIdleLifts() {
+        List<Lift> idleLifts = new ArrayList<>();
+        for (Lift lift :)
     }
 
-    private Lift assignLift() {
+    private Lift assignLift(ExternalRequest request) {
+        updateLiftsAboveRequestedFloor(request.getFromFloor());
+        updateLiftsBelowRequestedFloor(request.getFromFloor());
+        updateLiftsAtSameFloor(request.getFromFloor());
 
+        Lift liftToAssign = null;
+        switch (request.getRequestedDirection()) {
+            case DOWN: {
+               liftToAssign =  assignLiftGoingDownRequest(request.getFromFloor());
+                break;
+            }
+            case UP: {
+                liftToAssign = assignLiftGoingUpRequest(request.getFromFloor());
+                break;
+            }
+        }
+        return liftToAssign;
+    }
+
+    private Lift assignLiftGoingDownRequest(int requestFromFloor) {
+        Lift liftToAssign = null;
+        if (!getLiftsSameFloorAndIdle().isEmpty())
+            return getLiftsSameFloorAndIdle().get(0);
+        else {
+            if (!getLiftsAboveAndMovingDown().isEmpty()) {
+                int minimumDistance = Integer.MAX_VALUE;
+                for (Lift lift : getLiftsAboveAndMovingDown()) {
+                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                        liftToAssign = lift;
+                    }
+                }
+                return liftToAssign;
+            } else if (!getIdleLifts().isEmpty()) {
+                int minimumDistance = Integer.MAX_VALUE;
+                for (Lift lift : getIdleLifts()) {
+                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                        liftToAssign = lift;
+                    }
+                }
+            } else if (!getLiftsBelowAndMovingUp().isEmpty()) {
+                int minimumDistance = Integer.MAX_VALUE;
+                for (Lift lift : getLiftsBelowAndMovingUp()) {
+                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                        liftToAssign = lift;
+                    }
+                }
+            } else {
+                int minimumDistance = Integer.MAX_VALUE;
+                for (Lift lift : getLiftsAboveAndMovingDown()) {
+                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                        liftToAssign = lift;
+                    }
+                }
+            }
+        }
+        return liftToAssign;
+    }
+
+    private Lift assignLiftGoingUpRequest(int requestFromFloor) {
+        Lift liftToAssign = null;
+        if (!getLiftsSameFloorAndIdle().isEmpty())
+            return getLiftsSameFloorAndIdle().get(0);
+        if (!getLiftsBelowAndMovingUp().isEmpty()) {
+            int minimumDistance = Integer.MAX_VALUE;
+            for (Lift lift : getLiftsBelowAndMovingUp()) {
+                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    liftToAssign = lift;
+                }
+            }
+        } else if (!getIdleLifts().isEmpty()) {
+            int minimumDistance = Integer.MAX_VALUE;
+            for (Lift lift : getIdleLifts()) {
+                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    liftToAssign = lift;
+                }
+            }
+        } else if (!getLiftsAboveAndMovingDown().isEmpty()) {
+            int minimumDistance = Integer.MAX_VALUE;
+            for (Lift lift : getLiftsAboveAndMovingDown()) {
+                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    liftToAssign = lift;
+                }
+            }
+        } else {
+            int minimumDistance = Integer.MAX_VALUE;
+            for (Lift lift : getLiftsAboveAndMovingUp()) {
+                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    liftToAssign = lift;
+                }
+            }
+        }
+        return liftToAssign;
     }
 }
