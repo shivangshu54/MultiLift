@@ -13,4 +13,8 @@ public class LiftStore {
     public void addLiftsToStore(Lift lift) {
         lifts.add(lift);
     }
+
+    public List<Lift> getLifts() {
+        return lifts;
+    }
 }

@@ -3,6 +3,7 @@ package com.shivangshu.multilift.commons;
 import com.shivangshu.multilift.service.ILiftObservable;
 import com.shivangshu.multilift.service.ILiftObserver;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -16,6 +17,7 @@ public class Lift implements ILiftObservable {
     LiftStatus status;
     private SortedSet<Integer> floorRequestsGoingUp = new TreeSet<>();
     private SortedSet<Integer> flooRequestsGoingDown = new TreeSet<>(Comparator.<Integer>reverseOrder());
+    private ILiftObserver liftObserver;
 
     public Lift(int id, int minFloorNumber) {
         this.id = id;
@@ -25,12 +27,17 @@ public class Lift implements ILiftObservable {
 
     @Override
     public void notifyObservers(ILiftObserver liftObserver) {
-        //update liftObserver
+        liftObserver.displayInfo();
     }
 
     @Override
     public void noticeChange() {
 
+    }
+
+    @Override
+    public void addLiftObservers(ILiftObserver liftObserver) {
+        this.liftObserver = liftObserver;
     }
 
     public void updateFloorRequests(int floor) {
@@ -47,7 +54,7 @@ public class Lift implements ILiftObservable {
                 break;
             }
             case IDLE: {
-                if(floor > currentFloor) floorRequestsGoingUp.add(floor);
+                if (floor > currentFloor) floorRequestsGoingUp.add(floor);
                 else flooRequestsGoingDown.add(floor);
                 break;
             }
