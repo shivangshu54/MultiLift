@@ -3,8 +3,11 @@ package com.shivangshu.multilift.commons;
 import com.shivangshu.multilift.errors.UnknownLiftStatusError;
 import com.shivangshu.multilift.service.ILiftObservable;
 import com.shivangshu.multilift.service.ILiftObserver;
+import com.shivangshu.multilift.service.LiftAssigner;
 import lombok.Data;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -13,6 +16,8 @@ import java.util.TreeSet;
 
 @Data
 public class Lift extends BaseLift implements ILiftObservable {
+
+    Logger log = LoggerFactory.getLogger(Lift.class);
 
     private int id;
     int currentFloor;
@@ -64,7 +69,7 @@ public class Lift extends BaseLift implements ILiftObservable {
                 return Math.abs(requestedFloor - this.currentFloor);
             }
             case ERROR_NONE: {
-                //some logging
+                log.error("Unable to get Distance to requested Floor {} " + requestedFloor + " for Lift id {} "+ this.id);
                 return -1;
             }
         }

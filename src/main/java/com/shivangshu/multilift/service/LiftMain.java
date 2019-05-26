@@ -30,6 +30,7 @@ public class LiftMain {
     public void addExternalRequests(ExternalRequest r) {
         try {
             externalRequests.put(r);
+            log.debug("External request from Floor {} " + r.getFromFloor() + " added to queue");
             allocateLiftToExternalRequests();
         } catch (NullPointerException | InterruptedException e) {
             log.error("Exception while adding external Request {}", e.getMessage());
@@ -40,6 +41,11 @@ public class LiftMain {
         try {
             Lift liftToAssignInternalRequest = getLiftById(r.getLiftId());
             liftAssigner.assignInternalRequests(liftToAssignInternalRequest, r.getToFloor());
+            log.info("Lift {}" + liftToAssignInternalRequest.getId() + " to process Requests while going up {}" +
+                    liftToAssignInternalRequest.getFloorRequestsGoingUp());
+            log.info("Lift {}" + liftToAssignInternalRequest.getId() + " to process Requests while going down {}" +
+                    liftToAssignInternalRequest.getFlooRequestsGoingDown());
+
         } catch (LiftNotFoundException | NullPointerException e) {
             log.error("Exception while adding internal Request {}", e.getMessage());
         }
@@ -74,10 +80,11 @@ public class LiftMain {
     public void allocateLiftToExternalRequests() {
         try {
             while (true) {
-                if(externalRequests.isEmpty()) break;
+                if (externalRequests.isEmpty()) break;
                 ExternalRequest request = externalRequests.take();
                 Lift lift = liftAssigner.assignLift(request);
-                liftAssigner.assignInternalRequests(lift,request.getFromFloor());
+                liftAssigner.assignInternalRequests(lift, request.getFromFloor());
+                log.info("External Request from Floor {} " + request.getFromFloor() + " added to Lift id {} " + lift.getId());
             }
         } catch (InterruptedException e) {
             log.error("Unable to assign Request to lift");

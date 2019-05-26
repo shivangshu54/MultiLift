@@ -5,6 +5,8 @@ import com.shivangshu.multilift.commons.LiftStatus;
 import com.shivangshu.multilift.commons.LiftStore;
 import com.shivangshu.multilift.commons.RequestedDirection;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,9 @@ import java.util.List;
 
 @Component
 public class LiftAssigner {
+
+    Logger log = LoggerFactory.getLogger(LiftAssigner.class);
+
 
     private static final List<Lift> liftsInService = LiftStore.INSTANCE.getLifts();
     private static List<Lift> liftsBelowRequestedFloor = new ArrayList<>();
@@ -107,6 +112,9 @@ public class LiftAssigner {
         updateLiftsAboveRequestedFloor(request.getFromFloor());
         updateLiftsBelowRequestedFloor(request.getFromFloor());
         updateLiftsAtSameFloor(request.getFromFloor());
+        log.debug("Lifts Above Requested Floor for External Request are {}" + liftsAboveRequestedFloor.size() );
+        log.debug("Lifts Below Requested Floor for External Request are {}" + liftsBelowRequestedFloor.size() );
+        log.debug("Lifts At Same Requested Floor for External Request are {}" + liftsAtSameFloor.size() );
 
         Lift liftToAssign = null;
         switch (request.getRequestedDirection()) {

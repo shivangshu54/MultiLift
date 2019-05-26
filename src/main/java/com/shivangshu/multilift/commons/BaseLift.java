@@ -6,4 +6,6 @@ public abstract class BaseLift {
 
     public abstract void updateDirection(String direction) throws Exception;
 
+    public abstract int getDistanceToRequestedFloor(int floor);
+
 }
