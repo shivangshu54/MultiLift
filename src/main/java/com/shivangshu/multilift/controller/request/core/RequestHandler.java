@@ -3,16 +3,16 @@ package com.shivangshu.multilift.controller.request.core;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.shivangshu.multilift.commons.Lift;
+import com.shivangshu.multilift.commons.RequestedDirection;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
 import com.shivangshu.multilift.controller.request.InternalRequest;
+import com.shivangshu.multilift.errors.UnknownLiftStatusError;
 import com.shivangshu.multilift.service.LiftMain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 public class RequestHandler {
@@ -26,14 +26,21 @@ public class RequestHandler {
 
     @RequestMapping(value = "/lift/externalRequest", method = RequestMethod.PUT)
     public void addExternalRequests(@RequestBody String payload) {
-        ExternalRequest externalRequest = gson.fromJson(payload, ExternalRequest.class);
-            liftMain.addExternalRequests(externalRequest);
+        ExternalRequest externalRequest = new ExternalRequest();
+        JsonObject externalRequestJson = new JsonParser().parse(payload).getAsJsonObject();
+        String requestedDirection = externalRequestJson.get("requestedDirection").getAsString();
+        if (requestedDirection.equalsIgnoreCase("DOWN"))
+            externalRequest.setRequestedDirection(RequestedDirection.DOWN);
+        else if (requestedDirection.equalsIgnoreCase("UP"))
+            externalRequest.setRequestedDirection(RequestedDirection.UP);
+        externalRequest.setFromFloor(externalRequestJson.get("fromFloor").getAsInt());
+        liftMain.addExternalRequests(externalRequest);
     }
 
     @RequestMapping(value = "/lift/internalRequest", method = RequestMethod.PUT)
     public void addInternalRequest(@RequestBody String payload) {
         InternalRequest internalRequest = gson.fromJson(payload, InternalRequest.class);
-            liftMain.addInternalRequests(internalRequest);
+        liftMain.addInternalRequests(internalRequest);
     }
 
     @RequestMapping(value = "/lift/floorchange", method = RequestMethod.POST)
@@ -50,14 +57,10 @@ public class RequestHandler {
         JsonObject directionChangeObject = new JsonParser().parse(payload).getAsJsonObject();
         String id = directionChangeObject.get("id").getAsString();
         String direction = directionChangeObject.get("direction").getAsString();
-        liftMain.updateLiftDirection(id, direction);
+        try {
+            liftMain.updateLiftDirection(id, direction);
+        } catch (UnknownLiftStatusError unknownLiftStatusError) {
+            unknownLiftStatusError.printStackTrace();
+        }
     }
-
-//    public ExternalRequest getExternalRequests() {
-//        try {
-//            return externalRequests.poll(30, TimeUnit.SECONDS);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-    }
+}

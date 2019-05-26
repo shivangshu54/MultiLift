@@ -42,27 +42,6 @@ public class Lift extends BaseLift implements ILiftObservable {
         this.liftObserver = liftObserver;
     }
 
-    public void updateFloorRequests(int floor) {
-
-        switch (status) {
-            case MOVING_UP: {
-                if (floor > currentFloor) floorRequestsGoingUp.add(floor);
-                else flooRequestsGoingDown.add(floor);
-                break;
-            }
-            case MOVING_DOWN: {
-                if (floor < currentFloor) flooRequestsGoingDown.add(floor);
-                else floorRequestsGoingUp.add(floor);
-                break;
-            }
-            case IDLE: {
-                if (floor > currentFloor) floorRequestsGoingUp.add(floor);
-                else flooRequestsGoingDown.add(floor);
-                break;
-            }
-        }
-    }
-
     public int getDistanceToRequestedFloor(int requestedFloor) {
 
         switch (status) {

@@ -5,21 +5,20 @@ import com.shivangshu.multilift.commons.LiftStatus;
 import com.shivangshu.multilift.commons.LiftStore;
 import com.shivangshu.multilift.commons.RequestedDirection;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.shivangshu.multilift.commons.RequestedDirection.DOWN;
-import static com.shivangshu.multilift.commons.RequestedDirection.UP;
-
+@Component
 public class LiftAssigner {
 
     private static final List<Lift> liftsInService = LiftStore.INSTANCE.getLifts();
-    private static final int TOTAL_LIFTS = liftsInService.size();
-    private static int idleLifts = TOTAL_LIFTS;
     private static List<Lift> liftsBelowRequestedFloor = new ArrayList<>();
     private static List<Lift> liftsAboveRequestedFloor = new ArrayList<>();
     private static List<Lift> liftsAtSameFloor = new ArrayList<>();
+    private static List<Lift> idleLifts = new ArrayList<>();
 
     private void updateLiftsAboveRequestedFloor(int requestFromFloor) {
         for (Lift lift : liftsInService) {
@@ -52,7 +51,6 @@ public class LiftAssigner {
                 liftsAboveMovingDown.add(lift);
             }
         }
-        idleLifts -= liftsAboveMovingDown.size();
         return liftsAboveMovingDown;
     }
 
@@ -63,7 +61,6 @@ public class LiftAssigner {
                 liftsAboveMovingUp.add(lift);
             }
         }
-        idleLifts -= liftsAboveMovingUp.size();
         return liftsAboveMovingUp;
     }
 
@@ -84,7 +81,6 @@ public class LiftAssigner {
                 liftsBelowAndMovingDown.add(lift);
             }
         }
-        idleLifts -= liftsBelowAndMovingDown.size();
         return liftsBelowAndMovingDown;
     }
 
@@ -95,17 +91,19 @@ public class LiftAssigner {
                 liftsBelowAndMovingUp.add(lift);
             }
         }
-        idleLifts -= liftsBelowAndMovingUp.size();
         return liftsBelowAndMovingUp;
     }
 
-    //implement
     private List<Lift> getIdleLifts() {
-        List<Lift> idleLifts = new ArrayList<>();
-        for (Lift lift :)
+        for (Lift lift : liftsInService) {
+            if(lift.getStatus() == LiftStatus.IDLE) {
+                idleLifts.add(lift);
+            }
+        }
+        return idleLifts;
     }
 
-    private Lift assignLift(ExternalRequest request) {
+    public Lift assignLift(ExternalRequest request) {
         updateLiftsAboveRequestedFloor(request.getFromFloor());
         updateLiftsBelowRequestedFloor(request.getFromFloor());
         updateLiftsAtSameFloor(request.getFromFloor());
@@ -206,4 +204,26 @@ public class LiftAssigner {
         }
         return liftToAssign;
     }
+
+    public void assignInternalRequests(Lift lift, int toFloorRequest) {
+
+        switch (lift.getStatus()) {
+            case MOVING_UP: {
+                if (toFloorRequest > lift.getCurrentFloor()) lift.getFloorRequestsGoingUp().add(toFloorRequest);
+                else lift.getFlooRequestsGoingDown().add(toFloorRequest);
+                break;
+            }
+            case MOVING_DOWN: {
+                if (toFloorRequest < lift.getCurrentFloor()) lift.getFlooRequestsGoingDown().add(toFloorRequest);
+                else lift.getFloorRequestsGoingUp().add(toFloorRequest);
+                break;
+            }
+            case IDLE: {
+                if (toFloorRequest > lift.getCurrentFloor()) lift.getFloorRequestsGoingUp().add(toFloorRequest);
+                else lift.getFlooRequestsGoingDown().add(toFloorRequest);
+                break;
+            }
+        }
+    }
+
 }
