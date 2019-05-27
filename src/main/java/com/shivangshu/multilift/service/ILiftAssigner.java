@@ -5,5 +5,5 @@ import com.shivangshu.multilift.controller.request.ExternalRequest;
 
 public interface ILiftAssigner {
 
-    public Lift assignLift(ExternalRequest r);
+     Lift assignLift(ExternalRequest r);
 }

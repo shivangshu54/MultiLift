@@ -42,6 +42,13 @@ public class Lift extends BaseLift implements ILiftObservable {
         this.liftObserver = liftObserver;
     }
 
+    /**
+     *
+     * @param requestedFloor
+     * @return
+     * return the minimum distance the lift has to travel to reach to the requested floor. The minimum distance
+     * is calculated based on the total internal requests present in the lift's internal request queue.
+     */
     public int getDistanceToRequestedFloor(int requestedFloor) {
 
         switch (status) {
@@ -96,6 +103,10 @@ public class Lift extends BaseLift implements ILiftObservable {
         notifyObservers();
     }
 
+    /**
+     * perform the internal requests assigned to each lifts queues. This is actually a call to the lift motor to take the
+     * lift to the assigned floors in the internal queue request
+     */
     public void performInternalRequests() {
         while (true) {
             liftInProcess = true;

@@ -27,6 +27,14 @@ public class LiftMain {
     private LiftStore liftStoreInstance = LiftStore.INSTANCE;
     List<Lift> totalLifts = liftStoreInstance.getLifts();
 
+    /**
+     *
+     * @param r ExternalRequest
+     * @throws InterruptedException
+     * @throws NullPointerException
+     * this method adds the external request to the request queue and calls the allocateLiftToExternalRequest()
+     * function to allocate a lift based on the algorithm to one particular lift
+     */
     public void addExternalRequests(ExternalRequest r) throws InterruptedException, NullPointerException {
         try {
             externalRequests.put(r);
@@ -38,6 +46,13 @@ public class LiftMain {
         }
     }
 
+    /**
+     *
+     * @param r InternalRequest
+     * @throws LiftNotFoundException
+     * @throws NullPointerException
+     * this method adds internal requests to the corresponding lift's internal request queue.
+     */
     public void addInternalRequests(InternalRequest r) throws LiftNotFoundException, NullPointerException {
         try {
             Lift liftToAssignInternalRequest = getLiftById(r.getLiftId());
@@ -53,6 +68,13 @@ public class LiftMain {
         }
     }
 
+    /**
+     *
+     * @param id
+     * @return
+     * @throws LiftNotFoundException
+     * this method returns a lift object based on the requested Id.
+     */
     private Lift getLiftById(int id) throws LiftNotFoundException {
         for (Lift lift : totalLifts) {
             if (id == lift.getId()) {
@@ -63,6 +85,14 @@ public class LiftMain {
         throw new LiftNotFoundException("Lift with Id {} " + id + " does not exists");
     }
 
+    /**
+     *
+     * @param id
+     * @param floor
+     * @throws LiftNotFoundException
+     * this method is called by sensory changes when lift moves to a different floor. It updates the lift objects
+     * currentFloor method to the corresponding floor detected by the sensor.
+     */
     public void updateLiftFloorChange(String id, String floor) throws LiftNotFoundException {
         for (Lift l : totalLifts) {
             if (l.getId() == Integer.valueOf(id)) {
@@ -73,6 +103,14 @@ public class LiftMain {
         throw new LiftNotFoundException("Lift with Id {} " + id + " does not exists");
     }
 
+    /**
+     *
+     * @param id
+     * @param direction
+     * @throws UnknownLiftStatusError
+     * this method is called by sensory changes when lift moves to a different direction from previous. It updates the lift objects
+     * status variable to the corresponding direction of movement as detected by the sensor.
+     */
     public void updateLiftDirection(String id, String direction) throws UnknownLiftStatusError {
         for (Lift lift : totalLifts) {
             if (lift.getId() == Integer.valueOf(id)) {
@@ -81,6 +119,12 @@ public class LiftMain {
         }
     }
 
+    /**
+     *
+     * @throws InterruptedException
+     * Allocates a lift from the pool of lifts to the external requests queue one by one. It calls the ILiftAssigner's assignLift()
+     * method to assign a lift based on the algorithm implemented.
+     */
     public void allocateLiftToExternalRequests() throws InterruptedException {
         try {
             while (true) {

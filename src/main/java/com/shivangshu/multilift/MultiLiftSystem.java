@@ -4,27 +4,21 @@ import com.shivangshu.multilift.commons.Lift;
 import com.shivangshu.multilift.commons.LiftDisplayStore;
 import com.shivangshu.multilift.commons.LiftStore;
 import com.shivangshu.multilift.service.LiftDisplay;
-import org.omg.CORBA.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.env.Environment;
 
 @SpringBootApplication
-@EnableConfigurationProperties
 public class MultiLiftSystem {
 
     static Logger log = LoggerFactory.getLogger(MultiLiftSystem.class);
 
+    private static int numberOfLifts;
 
-    @Value("${config.numberOfLifts}")
-    private static int numberOfLifts = 4;
-
-    @Value("${config.minimumFloorNumber}")
-    private static int minimumFLoorNumber = 0;
+    private static int minimumFLoorNumber;
 
     @Autowired
     private static Environment env;
@@ -50,6 +44,8 @@ public class MultiLiftSystem {
 
     public static void main(String[] args) {
         SpringApplication.run(MultiLiftSystem.class);
+        numberOfLifts = Integer.valueOf(env.getProperty("config.numberOfLifts"));
+        minimumFLoorNumber = Integer.valueOf(env.getProperty("config.minimumFloorNumber"));
         for (int i = 0; i < numberOfLifts; i++) {
             createLifts(i + 1);
         }

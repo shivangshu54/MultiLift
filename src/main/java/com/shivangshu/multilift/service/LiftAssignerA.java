@@ -106,6 +106,12 @@ public class LiftAssignerA implements ILiftAssigner {
         return idleLifts;
     }
 
+    /**
+     *
+     * @param request
+     * @return
+     * this is the actual algorithm implementation of assigning a lift to an external request.
+     */
     public Lift assignLift(ExternalRequest request) {
         updateLiftsAboveRequestedFloor(request.getFromFloor());
         updateLiftsBelowRequestedFloor(request.getFromFloor());
@@ -128,6 +134,12 @@ public class LiftAssignerA implements ILiftAssigner {
         return liftToAssign;
     }
 
+    /**
+     *
+     * @param requestFromFloor
+     * @return
+     * finds the lift to assign when external request is for GOING_DOWN type
+     */
     private Lift assignLiftGoingDownRequest(int requestFromFloor) {
         Lift liftToAssign = null;
         if (!getLiftsSameFloorAndIdle().isEmpty())
@@ -177,6 +189,12 @@ public class LiftAssignerA implements ILiftAssigner {
         return liftToAssign;
     }
 
+    /**
+     *
+     * @param requestFromFloor
+     * @return
+     * finds the lift to assign when external request is for GOING_UP type
+     */
     private Lift assignLiftGoingUpRequest(int requestFromFloor) {
         Lift liftToAssign = null;
         if (!getLiftsSameFloorAndIdle().isEmpty())
@@ -223,6 +241,12 @@ public class LiftAssignerA implements ILiftAssigner {
         return liftToAssign;
     }
 
+    /**
+     *
+     * @param lift
+     * @param toFloorRequest
+     * this assigns internal requests when user has onboarded the lift based on priority queue algorithm
+     */
     public void assignInternalRequests(Lift lift, int toFloorRequest) {
 
         switch (lift.getStatus()) {
