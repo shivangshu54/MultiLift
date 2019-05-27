@@ -3,11 +3,9 @@ package com.shivangshu.multilift.service;
 import com.shivangshu.multilift.commons.Lift;
 import com.shivangshu.multilift.commons.LiftStatus;
 import com.shivangshu.multilift.commons.LiftStore;
-import com.shivangshu.multilift.commons.RequestedDirection;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -101,7 +99,7 @@ public class LiftAssigner {
 
     private List<Lift> getIdleLifts() {
         for (Lift lift : liftsInService) {
-            if(lift.getStatus() == LiftStatus.IDLE) {
+            if (lift.getStatus() == LiftStatus.IDLE) {
                 idleLifts.add(lift);
             }
         }
@@ -112,14 +110,14 @@ public class LiftAssigner {
         updateLiftsAboveRequestedFloor(request.getFromFloor());
         updateLiftsBelowRequestedFloor(request.getFromFloor());
         updateLiftsAtSameFloor(request.getFromFloor());
-        log.debug("Lifts Above Requested Floor for External Request are {}" + liftsAboveRequestedFloor.size() );
-        log.debug("Lifts Below Requested Floor for External Request are {}" + liftsBelowRequestedFloor.size() );
-        log.debug("Lifts At Same Requested Floor for External Request are {}" + liftsAtSameFloor.size() );
+        log.debug("Lifts Above Requested Floor for External Request are {}" + liftsAboveRequestedFloor.size());
+        log.debug("Lifts Below Requested Floor for External Request are {}" + liftsBelowRequestedFloor.size());
+        log.debug("Lifts At Same Requested Floor for External Request are {}" + liftsAtSameFloor.size());
 
         Lift liftToAssign = null;
         switch (request.getRequestedDirection()) {
             case DOWN: {
-               liftToAssign =  assignLiftGoingDownRequest(request.getFromFloor());
+                liftToAssign = assignLiftGoingDownRequest(request.getFromFloor());
                 break;
             }
             case UP: {
@@ -232,6 +230,8 @@ public class LiftAssigner {
                 break;
             }
         }
+        if (!lift.isLiftInProcess())
+            lift.performInternalRequests();
     }
 
 }

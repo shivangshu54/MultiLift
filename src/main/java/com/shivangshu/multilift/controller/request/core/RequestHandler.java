@@ -27,7 +27,7 @@ public class RequestHandler {
     LiftMain liftMain;
 
     /**
-     * @param payload format -> {"fromFloor: 3, "requestedDirection": "DOWN"}
+     * @param payload format -> {"fromFloor": 3, "requestedDirection": "DOWN"}
      *                API will be called by sensor whenever an external button to request a lift has been pressed
      *                Allowed requestedDirections -> {"DOWN", "UP"}
      */

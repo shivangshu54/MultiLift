@@ -24,7 +24,6 @@
         </rollingPolicy>
     </appender>
     <logger name="com.shivangshu.multilift" level="info">
-        <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
     </logger>
     <root level="info">

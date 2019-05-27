@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -25,6 +26,7 @@ public class Lift extends BaseLift implements ILiftObservable {
     private SortedSet<Integer> floorRequestsGoingUp = new TreeSet<>();
     private SortedSet<Integer> flooRequestsGoingDown = new TreeSet<>(Comparator.<Integer>reverseOrder());
     private ILiftObserver liftObserver;
+    private boolean liftInProcess = false;
 
     public Lift(int id, int minFloorNumber) {
         this.id = id;
@@ -69,7 +71,7 @@ public class Lift extends BaseLift implements ILiftObservable {
                 return Math.abs(requestedFloor - this.currentFloor);
             }
             case ERROR_NONE: {
-                log.error("Unable to get Distance to requested Floor {} " + requestedFloor + " for Lift id {} "+ this.id);
+                log.error("Unable to get Distance to requested Floor {} " + requestedFloor + " for Lift id {} " + this.id);
                 return -1;
             }
         }
@@ -92,10 +94,36 @@ public class Lift extends BaseLift implements ILiftObservable {
     public void updateDirection(String direction) throws UnknownLiftStatusError {
         if (direction.equalsIgnoreCase("UP"))
             this.status = LiftStatus.MOVING_UP;
-        else if(direction.equalsIgnoreCase("DOWN"))
+        else if (direction.equalsIgnoreCase("DOWN"))
             this.status = LiftStatus.MOVING_DOWN;
-        else if(direction.equalsIgnoreCase("IDLE"))
+        else if (direction.equalsIgnoreCase("IDLE"))
             this.status = LiftStatus.IDLE;
         else throw new UnknownLiftStatusError("Unknown Status Update Request Received");
     }
+
+    public void performInternalRequests() {
+        while (true) {
+            liftInProcess = true;
+            if (!floorRequestsGoingUp.isEmpty()) {
+                for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
+                    Integer floorServing = (Integer)i.next();
+                    log.info("Lift Id {} " + this.id + " is going up serving request to floor {} " + floorServing);
+                    floorRequestsGoingUp.remove(new Integer(floorServing));
+                    //It will be a call to the lift motor to start moving to the requested floor
+                }
+            } else if(!flooRequestsGoingDown.isEmpty()) {
+                for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
+                    Integer floorServing = (Integer) i.next();
+                    log.info("Lift Id {} " + this.id + " is going down serving request to floor {} " + floorServing);
+                    flooRequestsGoingDown.remove(new Integer(floorServing));
+                }
+            }
+            if (flooRequestsGoingDown.isEmpty() && floorRequestsGoingUp.isEmpty()) {
+                liftInProcess = false;
+                break;
+            }
+            else continue;
+        }
+    }
 }
+

@@ -5,6 +5,8 @@ import com.shivangshu.multilift.commons.LiftDisplayStore;
 import com.shivangshu.multilift.commons.LiftStore;
 import com.shivangshu.multilift.service.LiftDisplay;
 import org.omg.CORBA.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +17,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties
 public class MultiLiftSystem {
 
-    @Value( "${config.numberOfLifts}" )
+    static Logger log = LoggerFactory.getLogger(MultiLiftSystem.class);
+
+
+    @Value("${config.numberOfLifts}")
     private static int numberOfLifts = 4;
 
     @Value("${config.minimumFloorNumber}")
@@ -27,13 +32,6 @@ public class MultiLiftSystem {
     static LiftStore instance = LiftStore.INSTANCE;
     static LiftDisplayStore displayStoreInstane = LiftDisplayStore.INSTANCE;
 
-    public static void main(String[] args) {
-        SpringApplication.run(MultiLiftSystem.class);
-        for (int i = 0; i < numberOfLifts; i++) {
-            createLifts(i + 1);
-        }
-    }
-
     private static LiftDisplay createLiftDisplays(int liftId) {
         LiftDisplay liftDisplay = new LiftDisplay(liftId);
         displayStoreInstane.addLiftDisplays(liftDisplay);
@@ -42,9 +40,17 @@ public class MultiLiftSystem {
 
     private static void createLifts(int liftId) {
         Lift lift = new Lift(liftId, minimumFLoorNumber);
+        log.info("Lift Created with id {} " + liftId + " current floor {} " + lift.getCurrentFloor()
+                + " Status {} " + lift.getStatus().toString());
         instance.addLiftsToStore(lift);
         LiftDisplay liftDisplay = createLiftDisplays(liftId);
         lift.addLiftObservers(liftDisplay);
+    }
 
+    public static void main(String[] args) {
+        SpringApplication.run(MultiLiftSystem.class);
+        for (int i = 0; i < numberOfLifts; i++) {
+            createLifts(i + 1);
+        }
     }
 }
