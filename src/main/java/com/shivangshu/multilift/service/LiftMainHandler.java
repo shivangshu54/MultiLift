@@ -20,7 +20,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class LiftMainHandler {
 
     @Autowired
-    LiftAssignerA liftAssigner;
+    LiftAssignerA liftAssignerA;
+    @Autowired
+    LiftAssignerB liftAssignerB;
 
     @Autowired
     private Environment env;
@@ -56,7 +58,7 @@ public class LiftMainHandler {
     public void addInternalRequests(InternalRequest r) throws LiftNotFoundException, NullPointerException {
         try {
             Lift liftToAssignInternalRequest = getLiftById(r.getLiftId());
-            liftAssigner.assignInternalRequests(liftToAssignInternalRequest, r.getToFloor());
+            liftAssignerA.assignInternalRequests(liftToAssignInternalRequest, r.getToFloor());
             log.debug("Lift id {} " + liftToAssignInternalRequest.getId() + " to process Requests while going up {}" +
                     liftToAssignInternalRequest.getFloorRequestsGoingUp());
             log.debug("Lift {}" + liftToAssignInternalRequest.getId() + " to process Requests while going down {}" +
@@ -122,9 +124,9 @@ public class LiftMainHandler {
             while (true) {
                 if (externalRequests.isEmpty()) break;
                 ExternalRequest request = externalRequests.take();
-                Lift lift = liftAssigner.assignLift(request);
+                Lift lift = liftAssignerA.assignLift(request);
                 log.info("External Request from Floor {} " + request.getFromFloor() + " added to Lift id {} " + lift.getId());
-                liftAssigner.assignInternalRequests(lift, request.getFromFloor());
+                liftAssignerA.assignInternalRequests(lift, request.getFromFloor());
             }
         } catch (InterruptedException e) {
             log.error("Unable to assign Request to lift");
@@ -135,13 +137,13 @@ public class LiftMainHandler {
     public void disableRequestsToLiftWithMaxWeight(int liftId) throws LiftNotFoundException {
         Lift lift = getLiftById(liftId);
         lift.setHasReachedMaxWeight(true);
-        log.info("Disabling all further requests to lift {} "+ liftId + " as max weight has reached");
+        log.info("Disabling all further requests to lift {} " + liftId + " as max weight has reached");
     }
 
     public void enableRequestsToLift(Integer liftId) throws LiftNotFoundException {
         Lift lift = getLiftById(liftId);
         lift.setHasReachedMaxWeight(false);
-        log.info("Enabling requests to lift {} "+liftId + " as weight has reduced from max weight");
+        log.info("Enabling requests to lift {} " + liftId + " as weight has reduced from max weight");
     }
 
     /**
@@ -153,7 +155,7 @@ public class LiftMainHandler {
                 lift.getFloorRequestsGoingUp().clear();
                 lift.getFlooRequestsGoingDown().clear();
                 lift.setHasReachedMaxWeight(false);
-                liftAssigner.assignInternalRequests(lift, Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
+                liftAssignerA.assignInternalRequests(lift, Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
                 log.info("Lift id {} " + lift.getId() + " is going to base floor {} " + Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
             }
         }
