@@ -1,11 +1,13 @@
 package com.shivangshu.multilift.service;
 
 import com.shivangshu.multilift.commons.Lift;
-import com.shivangshu.multilift.commons.LiftStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
 
 public class LiftDisplay implements ILiftObserver {
+
+    Logger log = LoggerFactory.getLogger(LiftDisplay.class);
 
     private int id;
 
@@ -14,12 +16,8 @@ public class LiftDisplay implements ILiftObserver {
     }
 
     @Override
-    public void displayInfo() {
-
+    public void displayInfo(Lift lift) {
+        log.info("Lift id {} "+ lift.getId() + " is at floor {} "+ lift.getCurrentFloor() + " and is " + lift.getStatus().toString());
     }
 
-    @Override
-    public void getLifts() {
-
-    }
 }

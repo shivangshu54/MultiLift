@@ -44,6 +44,7 @@ public class MultiLiftSystem {
                 + " Status {} " + lift.getStatus().toString());
         instance.addLiftsToStore(lift);
         LiftDisplay liftDisplay = createLiftDisplays(liftId);
+        log.info("Lift Display Created with id {} " + liftId);
         lift.addLiftObservers(liftDisplay);
     }
 

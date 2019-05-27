@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class LiftAssigner {
+public class LiftAssignerA implements ILiftAssigner {
 
-    Logger log = LoggerFactory.getLogger(LiftAssigner.class);
+    Logger log = LoggerFactory.getLogger(LiftAssignerA.class);
 
 
     private static final List<Lift> liftsInService = LiftStore.INSTANCE.getLifts();

@@ -2,10 +2,9 @@ package controller;
 
 import com.shivangshu.multilift.commons.Lift;
 import com.shivangshu.multilift.commons.LiftStatus;
-import com.shivangshu.multilift.service.LiftAssigner;
+import com.shivangshu.multilift.service.LiftAssignerA;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -16,7 +15,7 @@ import java.util.Iterator;
 public class LiftAssignerTest {
 
     @InjectMocks
-    LiftAssigner liftAssigner;
+    LiftAssignerA liftAssigner;
 
     @BeforeClass
     public void setup() {

@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.shivangshu.multilift.commons.RequestedDirection;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
 import com.shivangshu.multilift.controller.request.InternalRequest;
+import com.shivangshu.multilift.errors.LiftNotFoundException;
 import com.shivangshu.multilift.errors.UnknownLiftStatusError;
 import com.shivangshu.multilift.service.LiftMain;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public class RequestHandler {
      *                Allowed requestedDirections -> {"DOWN", "UP"}
      */
     @RequestMapping(value = "/lift/externalRequest", method = RequestMethod.PUT)
-    public void addExternalRequests(@RequestBody String payload) {
+    public void addExternalRequests(@RequestBody String payload) throws InterruptedException, NullPointerException {
         ExternalRequest externalRequest = new ExternalRequest();
         JsonObject externalRequestJson = new JsonParser().parse(payload).getAsJsonObject();
         String requestedDirection = externalRequestJson.get("requestedDirection").getAsString();
@@ -41,7 +42,7 @@ public class RequestHandler {
         else if (requestedDirection.equalsIgnoreCase("UP"))
             externalRequest.setRequestedDirection(RequestedDirection.UP);
         externalRequest.setFromFloor(externalRequestJson.get("fromFloor").getAsInt());
-        logger.info("External Request received {} "+ externalRequest);
+        logger.info("External Request received {} " + externalRequest);
         liftMain.addExternalRequests(externalRequest);
     }
 
@@ -50,9 +51,9 @@ public class RequestHandler {
      *                API will be called by sensor whenever an internal button from a moving lift has been pressed.
      */
     @RequestMapping(value = "/lift/internalRequest", method = RequestMethod.PUT)
-    public void addInternalRequest(@RequestBody String payload) {
+    public void addInternalRequest(@RequestBody String payload) throws LiftNotFoundException, NullPointerException{
         InternalRequest internalRequest = gson.fromJson(payload, InternalRequest.class);
-        logger.info("Internal Request Received {} "+ internalRequest);
+        logger.info("Internal Request Received {} " + internalRequest);
         liftMain.addInternalRequests(internalRequest);
     }
 
@@ -61,11 +62,11 @@ public class RequestHandler {
      *                This will be called by a senor when it detects a change in lift floor.
      */
     @RequestMapping(value = "/lift/floorchange", method = RequestMethod.POST)
-    public void updateLiftFloorChange(@RequestBody String payload) {
+    public void updateLiftFloorChange(@RequestBody String payload) throws LiftNotFoundException{
         JsonObject floorChangeObject = new JsonParser().parse(payload).getAsJsonObject();
         String id = floorChangeObject.get("id").getAsString();
         String floor = floorChangeObject.get("floor").getAsString();
-        logger.debug("Floor Change Request Received : Lift Id {} "+id+" Floor {} "+floor);
+        logger.debug("Floor Change Request Received : Lift Id {} " + id + " Floor {} " + floor);
         liftMain.updateLiftFloorChange(id, floor);
 
     }
@@ -76,16 +77,11 @@ public class RequestHandler {
      *                Allowed direction values {"DOWN", "UP","IDLE"}
      */
     @RequestMapping(value = "/lift/directionchange", method = RequestMethod.POST)
-    public void updateLiftDirection(@RequestBody String payload) {
+    public void updateLiftDirection(@RequestBody String payload) throws UnknownLiftStatusError{
         JsonObject directionChangeObject = new JsonParser().parse(payload).getAsJsonObject();
         String id = directionChangeObject.get("id").getAsString();
         String direction = directionChangeObject.get("direction").getAsString();
-        logger.debug("Lift direction change request Received : Lift Id {} "+id+" Direction {} "+direction);
-
-        try {
-            liftMain.updateLiftDirection(id, direction);
-        } catch (UnknownLiftStatusError unknownLiftStatusError) {
-            unknownLiftStatusError.printStackTrace();
-        }
+        logger.debug("Lift direction change request Received : Lift Id {} " + id + " Direction {} " + direction);
+        liftMain.updateLiftDirection(id, direction);
     }
 }

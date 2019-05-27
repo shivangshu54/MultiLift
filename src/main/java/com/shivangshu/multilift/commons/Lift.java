@@ -3,9 +3,7 @@ package com.shivangshu.multilift.commons;
 import com.shivangshu.multilift.errors.UnknownLiftStatusError;
 import com.shivangshu.multilift.service.ILiftObservable;
 import com.shivangshu.multilift.service.ILiftObserver;
-import com.shivangshu.multilift.service.LiftAssigner;
 import lombok.Data;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +33,8 @@ public class Lift extends BaseLift implements ILiftObservable {
     }
 
     @Override
-    public void notifyObservers(ILiftObserver liftObserver) {
-        liftObserver.displayInfo();
-    }
-
-    @Override
-    public void noticeChange() {
-
+    public void notifyObservers() {
+        liftObserver.displayInfo(this);
     }
 
     @Override
@@ -84,6 +77,7 @@ public class Lift extends BaseLift implements ILiftObservable {
     @Override
     public void updateCurrentFloor(int floor) {
         this.currentFloor = floor;
+        notifyObservers();
     }
 
     /**
@@ -99,6 +93,7 @@ public class Lift extends BaseLift implements ILiftObservable {
         else if (direction.equalsIgnoreCase("IDLE"))
             this.status = LiftStatus.IDLE;
         else throw new UnknownLiftStatusError("Unknown Status Update Request Received");
+        notifyObservers();
     }
 
     public void performInternalRequests() {

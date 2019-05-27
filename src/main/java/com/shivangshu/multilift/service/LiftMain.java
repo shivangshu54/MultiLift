@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class LiftMain {
 
     @Autowired
-    LiftAssigner liftAssigner;
+    LiftAssignerA liftAssigner;
 
     Logger log = LoggerFactory.getLogger(LiftMain.class);
 
@@ -27,17 +27,18 @@ public class LiftMain {
     private LiftStore liftStoreInstance = LiftStore.INSTANCE;
     List<Lift> totalLifts = liftStoreInstance.getLifts();
 
-    public void addExternalRequests(ExternalRequest r) {
+    public void addExternalRequests(ExternalRequest r) throws InterruptedException, NullPointerException {
         try {
             externalRequests.put(r);
             log.debug("External request from Floor {} " + r.getFromFloor() + " added to queue");
             allocateLiftToExternalRequests();
         } catch (NullPointerException | InterruptedException e) {
             log.error("Exception while adding external Request {}", e.getMessage());
+            throw e;
         }
     }
 
-    public void addInternalRequests(InternalRequest r) {
+    public void addInternalRequests(InternalRequest r) throws LiftNotFoundException, NullPointerException {
         try {
             Lift liftToAssignInternalRequest = getLiftById(r.getLiftId());
             liftAssigner.assignInternalRequests(liftToAssignInternalRequest, r.getToFloor());
@@ -48,6 +49,7 @@ public class LiftMain {
 
         } catch (LiftNotFoundException | NullPointerException e) {
             log.error("Exception while adding internal Request {}", e.getMessage());
+            throw e;
         }
     }
 
@@ -61,12 +63,14 @@ public class LiftMain {
         throw new LiftNotFoundException("Lift with Id {} " + id + " does not exists");
     }
 
-    public void updateLiftFloorChange(String id, String floor) {
+    public void updateLiftFloorChange(String id, String floor) throws LiftNotFoundException {
         for (Lift l : totalLifts) {
             if (l.getId() == Integer.valueOf(id)) {
                 l.updateCurrentFloor(Integer.valueOf(floor));
+                break;
             }
         }
+        throw new LiftNotFoundException("Lift with Id {} " + id + " does not exists");
     }
 
     public void updateLiftDirection(String id, String direction) throws UnknownLiftStatusError {
@@ -77,7 +81,7 @@ public class LiftMain {
         }
     }
 
-    public void allocateLiftToExternalRequests() {
+    public void allocateLiftToExternalRequests() throws InterruptedException {
         try {
             while (true) {
                 if (externalRequests.isEmpty()) break;
@@ -88,6 +92,7 @@ public class LiftMain {
             }
         } catch (InterruptedException e) {
             log.error("Unable to assign Request to lift");
+            throw e;
         }
     }
 }
