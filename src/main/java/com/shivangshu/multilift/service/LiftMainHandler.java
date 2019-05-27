@@ -9,6 +9,7 @@ import com.shivangshu.multilift.errors.UnknownLiftStatusError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,24 +17,25 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
-public class LiftMain {
+public class LiftMainHandler {
 
     @Autowired
     LiftAssignerA liftAssigner;
 
-    Logger log = LoggerFactory.getLogger(LiftMain.class);
+    @Autowired
+    private Environment env;
+
+    Logger log = LoggerFactory.getLogger(LiftMainHandler.class);
 
     private BlockingQueue<ExternalRequest> externalRequests = new LinkedBlockingQueue<ExternalRequest>();
     private LiftStore liftStoreInstance = LiftStore.INSTANCE;
     List<Lift> totalLifts = liftStoreInstance.getLifts();
 
     /**
-     *
      * @param r ExternalRequest
      * @throws InterruptedException
-     * @throws NullPointerException
-     * this method adds the external request to the request queue and calls the allocateLiftToExternalRequest()
-     * function to allocate a lift based on the algorithm to one particular lift
+     * @throws NullPointerException this method adds the external request to the request queue and calls the allocateLiftToExternalRequest()
+     *                              function to allocate a lift based on the algorithm to one particular lift
      */
     public void addExternalRequests(ExternalRequest r) throws InterruptedException, NullPointerException {
         try {
@@ -47,11 +49,9 @@ public class LiftMain {
     }
 
     /**
-     *
      * @param r InternalRequest
      * @throws LiftNotFoundException
-     * @throws NullPointerException
-     * this method adds internal requests to the corresponding lift's internal request queue.
+     * @throws NullPointerException  this method adds internal requests to the corresponding lift's internal request queue.
      */
     public void addInternalRequests(InternalRequest r) throws LiftNotFoundException, NullPointerException {
         try {
@@ -69,11 +69,9 @@ public class LiftMain {
     }
 
     /**
-     *
      * @param id
      * @return
-     * @throws LiftNotFoundException
-     * this method returns a lift object based on the requested Id.
+     * @throws LiftNotFoundException this method returns a lift object based on the requested Id.
      */
     private Lift getLiftById(int id) throws LiftNotFoundException {
         for (Lift lift : totalLifts) {
@@ -86,12 +84,10 @@ public class LiftMain {
     }
 
     /**
-     *
      * @param id
      * @param floor
-     * @throws LiftNotFoundException
-     * this method is called by sensory changes when lift moves to a different floor. It updates the lift objects
-     * currentFloor method to the corresponding floor detected by the sensor.
+     * @throws LiftNotFoundException this method is called by sensory changes when lift moves to a different floor. It updates the lift objects
+     *                               currentFloor method to the corresponding floor detected by the sensor.
      */
     public void updateLiftFloorChange(String id, String floor) throws LiftNotFoundException {
         for (Lift l : totalLifts) {
@@ -104,12 +100,10 @@ public class LiftMain {
     }
 
     /**
-     *
      * @param id
      * @param direction
-     * @throws UnknownLiftStatusError
-     * this method is called by sensory changes when lift moves to a different direction from previous. It updates the lift objects
-     * status variable to the corresponding direction of movement as detected by the sensor.
+     * @throws UnknownLiftStatusError this method is called by sensory changes when lift moves to a different direction from previous. It updates the lift objects
+     *                                status variable to the corresponding direction of movement as detected by the sensor.
      */
     public void updateLiftDirection(String id, String direction) throws UnknownLiftStatusError {
         for (Lift lift : totalLifts) {
@@ -120,10 +114,8 @@ public class LiftMain {
     }
 
     /**
-     *
-     * @throws InterruptedException
-     * Allocates a lift from the pool of lifts to the external requests queue one by one. It calls the ILiftAssigner's assignLift()
-     * method to assign a lift based on the algorithm implemented.
+     * @throws InterruptedException Allocates a lift from the pool of lifts to the external requests queue one by one. It calls the ILiftAssigner's assignLift()
+     *                              method to assign a lift based on the algorithm implemented.
      */
     public void allocateLiftToExternalRequests() throws InterruptedException {
         try {
@@ -137,6 +129,33 @@ public class LiftMain {
         } catch (InterruptedException e) {
             log.error("Unable to assign Request to lift");
             throw e;
+        }
+    }
+
+    public void disableRequestsToLiftWithMaxWeight(int liftId) throws LiftNotFoundException {
+        Lift lift = getLiftById(liftId);
+        lift.setHasReachedMaxWeight(true);
+        log.info("Disabling all further requests to lift {} "+ liftId + " as max weight has reached");
+    }
+
+    public void enableRequestsToLift(Integer liftId) throws LiftNotFoundException {
+        Lift lift = getLiftById(liftId);
+        lift.setHasReachedMaxWeight(false);
+        log.info("Enabling requests to lift {} "+liftId + " as weight has reduced from max weight");
+    }
+
+    /**
+     * It sends all lifts to the ground floor and is triggered in case of power failure
+     */
+    public void resetAllLifts() {
+        for (Lift lift : totalLifts) {
+            if (lift.getCurrentFloor() != Integer.valueOf(env.getProperty("config.minimumFloorNumber"))) {
+                lift.getFloorRequestsGoingUp().clear();
+                lift.getFlooRequestsGoingDown().clear();
+                lift.setHasReachedMaxWeight(false);
+                liftAssigner.assignInternalRequests(lift, Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
+                log.info("Lift id {} " + lift.getId() + " is going to base floor {} " + Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
+            }
         }
     }
 }

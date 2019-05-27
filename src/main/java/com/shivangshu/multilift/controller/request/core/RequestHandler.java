@@ -8,7 +8,7 @@ import com.shivangshu.multilift.controller.request.ExternalRequest;
 import com.shivangshu.multilift.controller.request.InternalRequest;
 import com.shivangshu.multilift.errors.LiftNotFoundException;
 import com.shivangshu.multilift.errors.UnknownLiftStatusError;
-import com.shivangshu.multilift.service.LiftMain;
+import com.shivangshu.multilift.service.LiftMainHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class RequestHandler {
     Gson gson = new Gson();
 
     @Autowired
-    LiftMain liftMain;
+    LiftMainHandler liftMain;
 
     /**
      * @param payload format -> {"fromFloor": 3, "requestedDirection": "DOWN"}
@@ -51,7 +51,7 @@ public class RequestHandler {
      *                API will be called by sensor whenever an internal button from a moving lift has been pressed.
      */
     @RequestMapping(value = "/lift/internalRequest", method = RequestMethod.PUT)
-    public void addInternalRequest(@RequestBody String payload) throws LiftNotFoundException, NullPointerException{
+    public void addInternalRequest(@RequestBody String payload) throws LiftNotFoundException, NullPointerException {
         InternalRequest internalRequest = gson.fromJson(payload, InternalRequest.class);
         logger.info("Internal Request Received {} " + internalRequest);
         liftMain.addInternalRequests(internalRequest);
@@ -62,7 +62,7 @@ public class RequestHandler {
      *                This will be called by a senor when it detects a change in lift floor.
      */
     @RequestMapping(value = "/lift/floorchange", method = RequestMethod.POST)
-    public void updateLiftFloorChange(@RequestBody String payload) throws LiftNotFoundException{
+    public void updateLiftFloorChange(@RequestBody String payload) throws LiftNotFoundException {
         JsonObject floorChangeObject = new JsonParser().parse(payload).getAsJsonObject();
         String id = floorChangeObject.get("id").getAsString();
         String floor = floorChangeObject.get("floor").getAsString();
@@ -77,11 +77,46 @@ public class RequestHandler {
      *                Allowed direction values {"DOWN", "UP","IDLE"}
      */
     @RequestMapping(value = "/lift/directionchange", method = RequestMethod.POST)
-    public void updateLiftDirection(@RequestBody String payload) throws UnknownLiftStatusError{
+    public void updateLiftDirection(@RequestBody String payload) throws UnknownLiftStatusError {
         JsonObject directionChangeObject = new JsonParser().parse(payload).getAsJsonObject();
         String id = directionChangeObject.get("id").getAsString();
         String direction = directionChangeObject.get("direction").getAsString();
         logger.debug("Lift direction change request Received : Lift Id {} " + id + " Direction {} " + direction);
         liftMain.updateLiftDirection(id, direction);
+    }
+
+    /**
+     *
+     * @param liftId
+     * @param isReachedMaxWeight
+     * @throws LiftNotFoundException
+     * This is called whenever max weight is reached in a lift or weight becomes less than the max weight. The call
+     * is made by lift sensors
+     * format -> {?liftId=1&isReachedMaxWeight=true}
+     * isReachedMaxWeight allowed values = {True, False}
+     */
+    @RequestMapping(value = "/lift/maxWeightReached", method = RequestMethod.GET)
+    public void liftMaxWeightStatus(@RequestParam String liftId, @RequestParam String isReachedMaxWeight) throws LiftNotFoundException {
+        if (Boolean.valueOf(isReachedMaxWeight)) {
+            liftMain.disableRequestsToLiftWithMaxWeight(new Integer(liftId));
+        } else {
+            liftMain.enableRequestsToLift(new Integer(liftId));
+        }
+    }
+
+    /**
+     *
+     * @param isPowerCut
+     * this is called by lift sensor whenever a power cut happens.
+     * format -> ?isPowerCut=true
+     * allowed values of isPowerCut = {true, false}
+     */
+    @RequestMapping(value = "/lift/powerCut", method = RequestMethod.GET)
+    public void liftPowerCut(@RequestParam String isPowerCut) {
+        boolean b = Boolean.valueOf(isPowerCut);
+        if (b) {
+            logger.info("Power Failure! All lifts moving to base floor");
+            liftMain.resetAllLifts();
+        }
     }
 }

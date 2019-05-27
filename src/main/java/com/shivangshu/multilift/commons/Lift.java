@@ -25,11 +25,13 @@ public class Lift extends BaseLift implements ILiftObservable {
     private SortedSet<Integer> flooRequestsGoingDown = new TreeSet<>(Comparator.<Integer>reverseOrder());
     private ILiftObserver liftObserver;
     private boolean liftInProcess = false;
+    private boolean hasReachedMaxWeight;
 
     public Lift(int id, int minFloorNumber) {
         this.id = id;
         currentFloor = minFloorNumber;
         status = LiftStatus.IDLE;
+        hasReachedMaxWeight = false;
     }
 
     @Override

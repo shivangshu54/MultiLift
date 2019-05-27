@@ -18,14 +18,19 @@ public class LiftAssignerA implements ILiftAssigner {
 
 
     private static final List<Lift> liftsInService = LiftStore.INSTANCE.getLifts();
+
+    /**
+     *  the three lists of Lifts below store only the lifts for which max weight has not reached
+     */
     private static List<Lift> liftsBelowRequestedFloor = new ArrayList<>();
     private static List<Lift> liftsAboveRequestedFloor = new ArrayList<>();
     private static List<Lift> liftsAtSameFloor = new ArrayList<>();
+
     private static List<Lift> idleLifts = new ArrayList<>();
 
     private void updateLiftsAboveRequestedFloor(int requestFromFloor) {
         for (Lift lift : liftsInService) {
-            if (lift.getCurrentFloor() > requestFromFloor) {
+            if (lift.getCurrentFloor() > requestFromFloor && !lift.isHasReachedMaxWeight()) {
                 liftsAboveRequestedFloor.add(lift);
             }
         }
@@ -33,7 +38,7 @@ public class LiftAssignerA implements ILiftAssigner {
 
     private void updateLiftsBelowRequestedFloor(int requestFromFloor) {
         for (Lift lift : liftsInService) {
-            if (lift.getCurrentFloor() < requestFromFloor) {
+            if (lift.getCurrentFloor() < requestFromFloor && !lift.isHasReachedMaxWeight()) {
                 liftsBelowRequestedFloor.add(lift);
             }
         }
@@ -41,7 +46,7 @@ public class LiftAssignerA implements ILiftAssigner {
 
     private void updateLiftsAtSameFloor(int requestFromFloor) {
         for (Lift lift : liftsInService) {
-            if (lift.getCurrentFloor() == requestFromFloor) {
+            if (lift.getCurrentFloor() == requestFromFloor && !lift.isHasReachedMaxWeight()) {
                 liftsAtSameFloor.add(lift);
             }
         }
@@ -50,7 +55,7 @@ public class LiftAssignerA implements ILiftAssigner {
     private List<Lift> getLiftsAboveAndMovingDown() {
         List<Lift> liftsAboveMovingDown = new ArrayList<>();
         for (Lift lift : liftsAboveRequestedFloor) {
-            if (lift.getStatus() == LiftStatus.MOVING_DOWN) {
+            if (lift.getStatus() == LiftStatus.MOVING_DOWN && !lift.isHasReachedMaxWeight()) {
                 liftsAboveMovingDown.add(lift);
             }
         }
@@ -60,7 +65,7 @@ public class LiftAssignerA implements ILiftAssigner {
     private List<Lift> getLiftsAboveAndMovingUp() {
         List<Lift> liftsAboveMovingUp = new ArrayList<>();
         for (Lift lift : liftsAboveRequestedFloor) {
-            if (lift.getStatus() == LiftStatus.MOVING_UP) {
+            if (lift.getStatus() == LiftStatus.MOVING_UP && !lift.isHasReachedMaxWeight()) {
                 liftsAboveMovingUp.add(lift);
             }
         }
@@ -80,7 +85,7 @@ public class LiftAssignerA implements ILiftAssigner {
     private List<Lift> getLiftsBelowAndMovingDown() {
         List<Lift> liftsBelowAndMovingDown = new ArrayList<>();
         for (Lift lift : liftsBelowRequestedFloor) {
-            if (lift.getStatus() == LiftStatus.MOVING_DOWN) {
+            if (lift.getStatus() == LiftStatus.MOVING_DOWN && !lift.isHasReachedMaxWeight()) {
                 liftsBelowAndMovingDown.add(lift);
             }
         }
@@ -90,7 +95,7 @@ public class LiftAssignerA implements ILiftAssigner {
     private List<Lift> getLiftsBelowAndMovingUp() {
         List<Lift> liftsBelowAndMovingUp = new ArrayList<>();
         for (Lift lift : liftsBelowRequestedFloor) {
-            if (lift.getStatus() == LiftStatus.MOVING_UP) {
+            if (lift.getStatus() == LiftStatus.MOVING_UP && !lift.isHasReachedMaxWeight()) {
                 liftsBelowAndMovingUp.add(lift);
             }
         }
