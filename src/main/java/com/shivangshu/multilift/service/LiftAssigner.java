@@ -150,7 +150,7 @@ public class LiftAssigner {
                         liftToAssign = lift;
                     }
                 }
-            } else if (!getLiftsBelowAndMovingUp().isEmpty()) {
+            } else if (!getLiftsBelowAndMovingUp().isEmpty() || !getLiftsAboveAndMovingUp().isEmpty()) {
                 int minimumDistance = Integer.MAX_VALUE;
                 for (Lift lift : getLiftsBelowAndMovingUp()) {
                     if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
@@ -158,9 +158,15 @@ public class LiftAssigner {
                         liftToAssign = lift;
                     }
                 }
+                for (Lift lift : getLiftsAboveAndMovingUp()) {
+                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                        liftToAssign = lift;
+                    }
+                }
             } else {
                 int minimumDistance = Integer.MAX_VALUE;
-                for (Lift lift : getLiftsAboveAndMovingDown()) {
+                for (Lift lift : getLiftsBelowAndMovingDown()) {
                     if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
                         minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
                         liftToAssign = lift;
@@ -191,9 +197,15 @@ public class LiftAssigner {
                     liftToAssign = lift;
                 }
             }
-        } else if (!getLiftsAboveAndMovingDown().isEmpty()) {
+        } else if (!getLiftsAboveAndMovingDown().isEmpty() || !getLiftsBelowAndMovingDown().isEmpty()) {
             int minimumDistance = Integer.MAX_VALUE;
             for (Lift lift : getLiftsAboveAndMovingDown()) {
+                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
+                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    liftToAssign = lift;
+                }
+            }
+            for (Lift lift : getLiftsBelowAndMovingDown()) {
                 if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
                     minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
                     liftToAssign = lift;
