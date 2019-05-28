@@ -6,10 +6,10 @@ import com.shivangshu.multilift.commons.LiftStore;
 import com.shivangshu.multilift.service.LiftDisplay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
+
 
 @SpringBootApplication
 public class MultiLiftSystem {
@@ -19,9 +19,6 @@ public class MultiLiftSystem {
     private static int numberOfLifts = 4;
 
     private static int minimumFLoorNumber = 0;
-
-    @Autowired
-    private static Environment env;
 
     static LiftStore instance = LiftStore.INSTANCE;
     static LiftDisplayStore displayStoreInstane = LiftDisplayStore.INSTANCE;
