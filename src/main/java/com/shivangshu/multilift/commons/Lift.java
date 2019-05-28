@@ -105,6 +105,7 @@ public class Lift extends BaseLift implements ILiftObservable {
                                     sum += WAITING_TIME_AT_FLOOR;
                                 } else break;
                             }
+                            sum += Math.abs(requestedFloor - this.currentFloor);
                         } else {
                             for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
                                 sum += WAITING_TIME_AT_FLOOR;
@@ -118,7 +119,7 @@ public class Lift extends BaseLift implements ILiftObservable {
                                 } else break;
                             }
                             sum += (this.currentFloor - flooRequestsGoingDown.last()) +
-                                    Math.abs(Math.abs(floorRequestsGoingUp.last()) - Math.abs(flooRequestsGoingDown.last())) +
+                                    Math.abs(Math.abs(floorRequestsGoingUp.last()) - flooRequestsGoingDown.last()) +
                                     Math.abs(Math.abs(floorRequestsGoingUp.last() - requestedFloor));
                         }
                         break;
@@ -167,6 +168,10 @@ public class Lift extends BaseLift implements ILiftObservable {
                             }
                             for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
                                 sum += WAITING_TIME_AT_FLOOR;
+                            }
+                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext();) {
+                                if((Integer)i.next() < requestedFloor)
+                                    sum += WAITING_TIME_AT_FLOOR;
                             }
                             sum += Math.abs(floorRequestsGoingUp.last() - this.currentFloor) +
                                     Math.abs(floorRequestsGoingUp.last() - flooRequestsGoingDown.last())
