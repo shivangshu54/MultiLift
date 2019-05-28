@@ -1,16 +1,18 @@
 package com.shivangshu.multilift.service;
 
 import com.shivangshu.multilift.commons.Lift;
+import com.shivangshu.multilift.commons.RequestedDirection;
 import com.shivangshu.multilift.controller.request.ExternalRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-
 @Component
-public class LiftAssignerA extends BaseLiftAssigner implements ILiftAssigner {
+public class LiftAssignerB extends BaseLiftAssigner implements ILiftAssigner{
 
-    Logger log = LoggerFactory.getLogger(LiftAssignerA.class);
+    Logger log = LoggerFactory.getLogger(LiftAssignerB.class);
 
     /**
      *
@@ -52,47 +54,49 @@ public class LiftAssignerA extends BaseLiftAssigner implements ILiftAssigner {
             return getLiftsSameFloorAndIdle().get(0);
         else {
             if (!getLiftsAboveAndMovingDown().isEmpty()) {
-                int minimumDistance = Integer.MAX_VALUE;
+                int minimumTime = Integer.MAX_VALUE;
                 for (Lift lift : getLiftsAboveAndMovingDown()) {
-                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN) <= minimumTime) {
+                        minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN);
                         liftToAssign = lift;
                     }
                 }
                 return liftToAssign;
             } else if (!getIdleLifts().isEmpty()) {
-                int minimumDistance = Integer.MAX_VALUE;
+                int minimumTime = Integer.MAX_VALUE;
                 for (Lift lift : getIdleLifts()) {
-                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN) <= minimumTime) {
+                        minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN);
                         liftToAssign = lift;
                     }
                 }
+                return liftToAssign;
             } else if (!getLiftsBelowAndMovingUp().isEmpty() || !getLiftsAboveAndMovingUp().isEmpty()) {
-                int minimumDistance = Integer.MAX_VALUE;
+                int minimumTime = Integer.MAX_VALUE;
                 for (Lift lift : getLiftsBelowAndMovingUp()) {
-                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN) <= minimumTime) {
+                        minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN);
                         liftToAssign = lift;
                     }
                 }
                 for (Lift lift : getLiftsAboveAndMovingUp()) {
-                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN) <= minimumTime) {
+                        minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN);
                         liftToAssign = lift;
                     }
                 }
+                return liftToAssign;
             } else {
-                int minimumDistance = Integer.MAX_VALUE;
+                int minimumTime = Integer.MAX_VALUE;
                 for (Lift lift : getLiftsBelowAndMovingDown()) {
-                    if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                        minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                    if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN) <= minimumTime) {
+                        minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.DOWN);
                         liftToAssign = lift;
                     }
                 }
+                return liftToAssign;
             }
         }
-        return liftToAssign;
     }
 
     /**
@@ -106,40 +110,40 @@ public class LiftAssignerA extends BaseLiftAssigner implements ILiftAssigner {
         if (!getLiftsSameFloorAndIdle().isEmpty())
             return getLiftsSameFloorAndIdle().get(0);
         if (!getLiftsBelowAndMovingUp().isEmpty()) {
-            int minimumDistance = Integer.MAX_VALUE;
+            int minimumTime = Integer.MAX_VALUE;
             for (Lift lift : getLiftsBelowAndMovingUp()) {
-                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP) <= minimumTime) {
+                    minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP);
                     liftToAssign = lift;
                 }
             }
         } else if (!getIdleLifts().isEmpty()) {
-            int minimumDistance = Integer.MAX_VALUE;
+            int minimumTime = Integer.MAX_VALUE;
             for (Lift lift : getIdleLifts()) {
-                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP) <= minimumTime) {
+                    minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP);
                     liftToAssign = lift;
                 }
             }
         } else if (!getLiftsAboveAndMovingDown().isEmpty() || !getLiftsBelowAndMovingDown().isEmpty()) {
-            int minimumDistance = Integer.MAX_VALUE;
+            int minimumTime = Integer.MAX_VALUE;
             for (Lift lift : getLiftsAboveAndMovingDown()) {
-                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP) <= minimumTime) {
+                    minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP);
                     liftToAssign = lift;
                 }
             }
             for (Lift lift : getLiftsBelowAndMovingDown()) {
-                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP) <= minimumTime) {
+                    minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP);
                     liftToAssign = lift;
                 }
             }
         } else {
-            int minimumDistance = Integer.MAX_VALUE;
+            int minimumTime = Integer.MAX_VALUE;
             for (Lift lift : getLiftsAboveAndMovingUp()) {
-                if (lift.getDistanceToRequestedFloor(requestFromFloor) <= minimumDistance) {
-                    minimumDistance = lift.getDistanceToRequestedFloor(requestFromFloor);
+                if (lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP) <= minimumTime) {
+                    minimumTime = lift.getTimeToRequestedFloor(requestFromFloor, RequestedDirection.UP);
                     liftToAssign = lift;
                 }
             }
