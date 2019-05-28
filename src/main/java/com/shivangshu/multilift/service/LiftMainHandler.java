@@ -28,7 +28,7 @@ public class LiftMainHandler {
     Logger log = LoggerFactory.getLogger(LiftMainHandler.class);
 
     private BlockingQueue<ExternalRequest> externalRequests = new LinkedBlockingQueue<ExternalRequest>();
-    private LiftStore liftStoreInstance = LiftStore.INSTANCE;
+    private LiftStore liftStoreInstance = LiftStore.getInstance();
     List<Lift> totalLifts = liftStoreInstance.getLifts();
 
     /**

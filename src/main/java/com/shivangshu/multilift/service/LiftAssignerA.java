@@ -17,7 +17,7 @@ public class LiftAssignerA implements ILiftAssigner {
     Logger log = LoggerFactory.getLogger(LiftAssignerA.class);
 
 
-    private static final List<Lift> liftsInService = LiftStore.INSTANCE.getLifts();
+    private static final List<Lift> liftsInService = LiftStore.getInstance().getLifts();
 
     /**
      *  the three lists of Lifts below store only the lifts for which max weight has not reached

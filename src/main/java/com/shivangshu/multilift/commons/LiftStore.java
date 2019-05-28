@@ -5,10 +5,11 @@ import java.util.List;
 
 public class LiftStore {
 
-    public static final LiftStore INSTANCE = new LiftStore();
+    private static LiftStore INSTANCE = null;
     private List<Lift> lifts = new ArrayList<>();
 
-    private LiftStore(){}
+    private LiftStore() {
+    }
 
     public void addLiftsToStore(Lift lift) {
         lifts.add(lift);
@@ -16,5 +17,12 @@ public class LiftStore {
 
     public List<Lift> getLifts() {
         return lifts;
+    }
+
+    public static LiftStore getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE =  new LiftStore();
+            return INSTANCE;
+        } else return INSTANCE;
     }
 }

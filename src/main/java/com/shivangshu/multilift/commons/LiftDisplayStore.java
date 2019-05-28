@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LiftDisplayStore {
-    public static final LiftDisplayStore INSTANCE = new LiftDisplayStore();
+    private static LiftDisplayStore INSTANCE = null;
     private List<LiftDisplay> liftDisplays = new ArrayList<>();
 
-    private LiftDisplayStore(){}
+    private LiftDisplayStore() {
+    }
 
     public void addLiftDisplays(LiftDisplay liftDisplay) {
         liftDisplays.add(liftDisplay);
@@ -17,5 +18,12 @@ public class LiftDisplayStore {
 
     public List<LiftDisplay> getLiftDisplays() {
         return liftDisplays;
+    }
+
+    public static LiftDisplayStore getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new LiftDisplayStore();
+            return INSTANCE;
+        } else return INSTANCE;
     }
 }

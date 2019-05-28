@@ -20,8 +20,8 @@ public class MultiLiftSystem {
 
     private static int minimumFLoorNumber = 0;
 
-    static LiftStore instance = LiftStore.INSTANCE;
-    static LiftDisplayStore displayStoreInstane = LiftDisplayStore.INSTANCE;
+    static LiftStore instance = LiftStore.getInstance();
+    static LiftDisplayStore displayStoreInstane = LiftDisplayStore.getInstance();
 
     private static LiftDisplay createLiftDisplays(int liftId) {
         LiftDisplay liftDisplay = new LiftDisplay(liftId);

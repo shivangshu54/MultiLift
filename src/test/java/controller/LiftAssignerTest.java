@@ -67,7 +67,7 @@ public class LiftAssignerTest {
 
     @Test
     public void testAssignExternalRequest() {
-        LiftStore liftStore = LiftStore.INSTANCE;
+        LiftStore liftStore = LiftStore.getInstance();
         Lift l1 = new Lift(1, 0);
         l1.setStatus(LiftStatus.IDLE);
         liftStore.addLiftsToStore(l1);
