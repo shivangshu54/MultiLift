@@ -128,8 +128,11 @@ public class BaseLiftAssigner {
                 break;
             }
         }
-//        if (!lift.isLiftInProcess())
-//            lift.performInternalRequests();
+        // this is to be uncommented to test the flow. Ideally it should run always and sensors should continuously call updateFloor
+        // and updateDirection function for this to function seamlessly. But given the restriction, we have to manually hit the API's
+        // and run the flow.
+        if (!lift.isLiftInProcess())
+            lift.performInternalRequests();
     }
 
 }
