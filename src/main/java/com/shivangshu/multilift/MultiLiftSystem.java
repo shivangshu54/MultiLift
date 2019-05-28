@@ -6,22 +6,19 @@ import com.shivangshu.multilift.commons.LiftStore;
 import com.shivangshu.multilift.service.LiftDisplay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
+
 
 @SpringBootApplication
 public class MultiLiftSystem {
 
     static Logger log = LoggerFactory.getLogger(MultiLiftSystem.class);
 
-    private static int numberOfLifts;
+    private static int numberOfLifts = 4;
 
-    private static int minimumFLoorNumber;
-
-    @Autowired
-    private static Environment env;
+    private static int minimumFLoorNumber = 0;
 
     static LiftStore instance = LiftStore.INSTANCE;
     static LiftDisplayStore displayStoreInstane = LiftDisplayStore.INSTANCE;
@@ -44,8 +41,6 @@ public class MultiLiftSystem {
 
     public static void main(String[] args) {
         SpringApplication.run(MultiLiftSystem.class);
-        numberOfLifts = Integer.valueOf(env.getProperty("config.numberOfLifts"));
-        minimumFLoorNumber = Integer.valueOf(env.getProperty("config.minimumFloorNumber"));
         for (int i = 0; i < numberOfLifts; i++) {
             createLifts(i + 1);
         }

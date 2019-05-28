@@ -93,7 +93,7 @@ public class LiftMainHandler {
         for (Lift l : totalLifts) {
             if (l.getId() == Integer.valueOf(id)) {
                 l.updateCurrentFloor(Integer.valueOf(floor));
-                break;
+                return;
             }
         }
         throw new LiftNotFoundException("Lift with Id {} " + id + " does not exists");
