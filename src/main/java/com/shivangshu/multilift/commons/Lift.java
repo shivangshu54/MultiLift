@@ -24,8 +24,6 @@ public class Lift extends BaseLift implements ILiftObservable {
     @Autowired
     private Environment env;
 
-    private final int WAITING_TIME_AT_FLOOR = Integer.valueOf(env.getProperty("config.waitingTimeAtFloor"));
-
     private int id;
     int currentFloor;
     LiftStatus status;
@@ -87,7 +85,6 @@ public class Lift extends BaseLift implements ILiftObservable {
     }
 
     /**
-     *
      * @param requestedFloor
      * @param requestedDirection
      * @return calculates the time lift takes to serve the external request of given direction considering all the
@@ -102,38 +99,50 @@ public class Lift extends BaseLift implements ILiftObservable {
                         if (requestedFloor <= this.currentFloor) {
                             for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
                                 if ((Integer) i.next() > requestedFloor) {
-                                    sum += WAITING_TIME_AT_FLOOR;
-                                } else break;
+                                    sum += 2;
+                                }
                             }
                             sum += Math.abs(requestedFloor - this.currentFloor);
                         } else {
-                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
-                                sum += WAITING_TIME_AT_FLOOR;
+                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); i.next() ) {
+                                sum += 2;
                             }
-                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
-                                sum += WAITING_TIME_AT_FLOOR;
+                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); i.next() ) {
+                                sum += 2;
                             }
                             for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
                                 if ((Integer) i.next() > requestedFloor) {
-                                    sum += WAITING_TIME_AT_FLOOR;
-                                } else break;
+                                    sum += 2;
+                                }
                             }
-                            sum += (this.currentFloor - flooRequestsGoingDown.last()) +
-                                    Math.abs(Math.abs(floorRequestsGoingUp.last()) - flooRequestsGoingDown.last()) +
-                                    Math.abs(Math.abs(floorRequestsGoingUp.last() - requestedFloor));
+                            if (!flooRequestsGoingDown.isEmpty()) { //Logically this cannot be empty because lift is already moving down
+                                sum += this.currentFloor - flooRequestsGoingDown.last();
+                            }
+                            if (!floorRequestsGoingUp.isEmpty()) {
+                                sum += Math.abs(Math.abs(floorRequestsGoingUp.last()) - flooRequestsGoingDown.last())
+                                        + Math.abs(Math.abs(floorRequestsGoingUp.last() - requestedFloor));
+
+                            } else {
+                                sum += Math.abs(requestedFloor - flooRequestsGoingDown.last());
+                            }
                         }
                         break;
                     }
                     case UP: {
-                        for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
-                            sum += WAITING_TIME_AT_FLOOR;
+                        for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); i.next()) {
+                            sum += 2;
                         }
-                        for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
+                        for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext();) {
                             if ((Integer) i.next() < requestedFloor)
-                                sum += WAITING_TIME_AT_FLOOR;
+                                sum += 2;
                         }
-                        sum += Math.abs(this.currentFloor - flooRequestsGoingDown.last())
-                                + Math.abs(requestedFloor - flooRequestsGoingDown.last());
+                        if (!floorRequestsGoingUp.isEmpty()) {
+                            sum += Math.abs(this.currentFloor - flooRequestsGoingDown.last())
+                                    + Math.abs(requestedFloor - flooRequestsGoingDown.last());
+                        } else {
+                            sum += Math.abs(this.currentFloor - flooRequestsGoingDown.last()) +
+                                    Math.abs(requestedFloor - flooRequestsGoingDown.last());
+                        }
                         break;
                     }
                 }
@@ -142,13 +151,12 @@ public class Lift extends BaseLift implements ILiftObservable {
             case MOVING_UP: {
                 switch (requestedDirection) {
                     case DOWN: {
-                        for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
-                            sum += WAITING_TIME_AT_FLOOR;
+                        for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); i.next()) {
+                            sum += 2;
                         }
-                        for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
+                        for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext();) {
                             if ((Integer) i.next() > requestedFloor)
-                                sum += WAITING_TIME_AT_FLOOR;
-                            else break;
+                                sum += 2;
                         }
                         sum += Math.abs(floorRequestsGoingUp.last() - this.currentFloor) +
                                 Math.abs(floorRequestsGoingUp.last() - requestedFloor);
@@ -158,24 +166,28 @@ public class Lift extends BaseLift implements ILiftObservable {
                         if (requestedFloor >= this.currentFloor) {
                             for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
                                 if ((Integer) i.next() < requestedFloor)
-                                    sum += WAITING_TIME_AT_FLOOR;
-                                else break;
+                                    sum += 2;
                             }
                             sum += Math.abs(this.currentFloor - requestedFloor);
                         } else {
-                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
-                                sum += WAITING_TIME_AT_FLOOR;
+                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); i.next() ) {
+                                sum += 2;
                             }
-                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
-                                sum += WAITING_TIME_AT_FLOOR;
+                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); i.next()) {
+                                sum += 2;
                             }
                             for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext();) {
-                                if((Integer)i.next() < requestedFloor)
-                                    sum += WAITING_TIME_AT_FLOOR;
+                                if ((Integer) i.next() < requestedFloor)
+                                    sum += 2;
                             }
-                            sum += Math.abs(floorRequestsGoingUp.last() - this.currentFloor) +
-                                    Math.abs(floorRequestsGoingUp.last() - flooRequestsGoingDown.last())
-                                    + (requestedFloor - flooRequestsGoingDown.last());
+                            if (!flooRequestsGoingDown.isEmpty()) {
+                                sum += Math.abs(floorRequestsGoingUp.last() - this.currentFloor) +
+                                        Math.abs(floorRequestsGoingUp.last() - flooRequestsGoingDown.last())
+                                        + (requestedFloor - flooRequestsGoingDown.last());
+                            } else {
+                                sum += Math.abs(this.currentFloor - floorRequestsGoingUp.last()) +
+                                        Math.abs(floorRequestsGoingUp.last() - requestedFloor);
+                            }
                         }
                         break;
                     }

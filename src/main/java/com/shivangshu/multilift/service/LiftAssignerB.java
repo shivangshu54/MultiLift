@@ -70,6 +70,7 @@ public class LiftAssignerB extends BaseLiftAssigner implements ILiftAssigner{
                         liftToAssign = lift;
                     }
                 }
+                return liftToAssign;
             } else if (!getLiftsBelowAndMovingUp().isEmpty() || !getLiftsAboveAndMovingUp().isEmpty()) {
                 int minimumTime = Integer.MAX_VALUE;
                 for (Lift lift : getLiftsBelowAndMovingUp()) {
@@ -84,6 +85,7 @@ public class LiftAssignerB extends BaseLiftAssigner implements ILiftAssigner{
                         liftToAssign = lift;
                     }
                 }
+                return liftToAssign;
             } else {
                 int minimumTime = Integer.MAX_VALUE;
                 for (Lift lift : getLiftsBelowAndMovingDown()) {
@@ -92,9 +94,9 @@ public class LiftAssignerB extends BaseLiftAssigner implements ILiftAssigner{
                         liftToAssign = lift;
                     }
                 }
+                return liftToAssign;
             }
         }
-        return liftToAssign;
     }
 
     /**

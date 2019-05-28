@@ -128,8 +128,8 @@ public class BaseLiftAssigner {
                 break;
             }
         }
-        if (!lift.isLiftInProcess())
-            lift.performInternalRequests();
+//        if (!lift.isLiftInProcess())
+//            lift.performInternalRequests();
     }
 
 }

@@ -58,7 +58,7 @@ public class LiftMainHandler {
     public void addInternalRequests(InternalRequest r) throws LiftNotFoundException, NullPointerException {
         try {
             Lift liftToAssignInternalRequest = getLiftById(r.getLiftId());
-            liftAssignerA.assignInternalRequests(liftToAssignInternalRequest, r.getToFloor());
+            liftAssignerB.assignInternalRequests(liftToAssignInternalRequest, r.getToFloor());
             log.debug("Lift id {} " + liftToAssignInternalRequest.getId() + " to process Requests while going up {}" +
                     liftToAssignInternalRequest.getFloorRequestsGoingUp());
             log.debug("Lift {}" + liftToAssignInternalRequest.getId() + " to process Requests while going down {}" +
@@ -95,7 +95,7 @@ public class LiftMainHandler {
         for (Lift l : totalLifts) {
             if (l.getId() == Integer.valueOf(id)) {
                 l.updateCurrentFloor(Integer.valueOf(floor));
-                break;
+                return;
             }
         }
         throw new LiftNotFoundException("Lift with Id {} " + id + " does not exists");
@@ -124,9 +124,9 @@ public class LiftMainHandler {
             while (true) {
                 if (externalRequests.isEmpty()) break;
                 ExternalRequest request = externalRequests.take();
-                Lift lift = liftAssignerA.assignLift(request);
+                Lift lift = liftAssignerB.assignLift(request);
                 log.info("External Request from Floor {} " + request.getFromFloor() + " added to Lift id {} " + lift.getId());
-                liftAssignerA.assignInternalRequests(lift, request.getFromFloor());
+                liftAssignerB.assignInternalRequests(lift, request.getFromFloor());
             }
         } catch (InterruptedException e) {
             log.error("Unable to assign Request to lift");
@@ -155,7 +155,7 @@ public class LiftMainHandler {
                 lift.getFloorRequestsGoingUp().clear();
                 lift.getFlooRequestsGoingDown().clear();
                 lift.setHasReachedMaxWeight(false);
-                liftAssignerA.assignInternalRequests(lift, Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
+                liftAssignerB.assignInternalRequests(lift, Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
                 log.info("Lift id {} " + lift.getId() + " is going to base floor {} " + Integer.valueOf(env.getProperty("config.minimumFloorNumber")));
             }
         }

@@ -16,9 +16,9 @@ public class MultiLiftSystem {
 
     static Logger log = LoggerFactory.getLogger(MultiLiftSystem.class);
 
-    private static int numberOfLifts;
+    private static int numberOfLifts = 4;
 
-    private static int minimumFLoorNumber;
+    private static int minimumFLoorNumber = 0;
 
     @Autowired
     private static Environment env;
@@ -44,8 +44,6 @@ public class MultiLiftSystem {
 
     public static void main(String[] args) {
         SpringApplication.run(MultiLiftSystem.class);
-        numberOfLifts = Integer.valueOf(env.getProperty("config.numberOfLifts"));
-        minimumFLoorNumber = Integer.valueOf(env.getProperty("config.minimumFloorNumber"));
         for (int i = 0; i < numberOfLifts; i++) {
             createLifts(i + 1);
         }
