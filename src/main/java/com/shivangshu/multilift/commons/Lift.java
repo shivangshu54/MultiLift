@@ -6,6 +6,8 @@ import com.shivangshu.multilift.service.ILiftObserver;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -17,6 +19,10 @@ import java.util.TreeSet;
 public class Lift extends BaseLift implements ILiftObservable {
 
     Logger log = LoggerFactory.getLogger(Lift.class);
+
+
+    @Autowired
+    private Environment env;
 
     private int id;
     int currentFloor;
@@ -45,10 +51,8 @@ public class Lift extends BaseLift implements ILiftObservable {
     }
 
     /**
-     *
      * @param requestedFloor
-     * @return
-     * return the minimum distance the lift has to travel to reach to the requested floor. The minimum distance
+     * @return return the minimum distance the lift has to travel to reach to the requested floor. The minimum distance
      * is calculated based on the total internal requests present in the lift's internal request queue.
      */
     public int getDistanceToRequestedFloor(int requestedFloor) {
@@ -78,6 +82,123 @@ public class Lift extends BaseLift implements ILiftObservable {
             }
         }
         return 0;
+    }
+
+    /**
+     * @param requestedFloor
+     * @param requestedDirection
+     * @return calculates the time lift takes to serve the external request of given direction considering all the
+     * intermediate internal requests in its queue.
+     */
+    public int getTimeToRequestedFloor(int requestedFloor, RequestedDirection requestedDirection) {
+        int sum = 0;
+        switch (status) {
+            case MOVING_DOWN: {
+                switch (requestedDirection) {
+                    case DOWN: {
+                        if (requestedFloor <= this.currentFloor) {
+                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
+                                if ((Integer) i.next() > requestedFloor) {
+                                    sum += 2;
+                                }
+                            }
+                            sum += Math.abs(requestedFloor - this.currentFloor);
+                        } else {
+                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); i.next() ) {
+                                sum += 2;
+                            }
+                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); i.next() ) {
+                                sum += 2;
+                            }
+                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
+                                if ((Integer) i.next() > requestedFloor) {
+                                    sum += 2;
+                                }
+                            }
+                            if (!flooRequestsGoingDown.isEmpty()) { //Logically this cannot be empty because lift is already moving down
+                                sum += this.currentFloor - flooRequestsGoingDown.last();
+                            }
+                            if (!floorRequestsGoingUp.isEmpty()) {
+                                sum += Math.abs(Math.abs(floorRequestsGoingUp.last()) - flooRequestsGoingDown.last())
+                                        + Math.abs(Math.abs(floorRequestsGoingUp.last() - requestedFloor));
+
+                            } else {
+                                sum += Math.abs(requestedFloor - flooRequestsGoingDown.last());
+                            }
+                        }
+                        break;
+                    }
+                    case UP: {
+                        for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); i.next()) {
+                            sum += 2;
+                        }
+                        for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext();) {
+                            if ((Integer) i.next() < requestedFloor)
+                                sum += 2;
+                        }
+                        if (!floorRequestsGoingUp.isEmpty()) {
+                            sum += Math.abs(this.currentFloor - flooRequestsGoingDown.last())
+                                    + Math.abs(requestedFloor - flooRequestsGoingDown.last());
+                        } else {
+                            sum += Math.abs(this.currentFloor - flooRequestsGoingDown.last()) +
+                                    Math.abs(requestedFloor - flooRequestsGoingDown.last());
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+            case MOVING_UP: {
+                switch (requestedDirection) {
+                    case DOWN: {
+                        for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); i.next()) {
+                            sum += 2;
+                        }
+                        for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext();) {
+                            if ((Integer) i.next() > requestedFloor)
+                                sum += 2;
+                        }
+                        sum += Math.abs(floorRequestsGoingUp.last() - this.currentFloor) +
+                                Math.abs(floorRequestsGoingUp.last() - requestedFloor);
+                        break;
+                    }
+                    case UP: {
+                        if (requestedFloor >= this.currentFloor) {
+                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
+                                if ((Integer) i.next() < requestedFloor)
+                                    sum += 2;
+                            }
+                            sum += Math.abs(this.currentFloor - requestedFloor);
+                        } else {
+                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); i.next() ) {
+                                sum += 2;
+                            }
+                            for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); i.next()) {
+                                sum += 2;
+                            }
+                            for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext();) {
+                                if ((Integer) i.next() < requestedFloor)
+                                    sum += 2;
+                            }
+                            if (!flooRequestsGoingDown.isEmpty()) {
+                                sum += Math.abs(floorRequestsGoingUp.last() - this.currentFloor) +
+                                        Math.abs(floorRequestsGoingUp.last() - flooRequestsGoingDown.last())
+                                        + (requestedFloor - flooRequestsGoingDown.last());
+                            } else {
+                                sum += Math.abs(this.currentFloor - floorRequestsGoingUp.last()) +
+                                        Math.abs(floorRequestsGoingUp.last() - requestedFloor);
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+            case IDLE: {
+                sum += Math.abs(requestedFloor - this.currentFloor);
+            }
+        }
+        return sum;
     }
 
     /**
@@ -114,12 +235,12 @@ public class Lift extends BaseLift implements ILiftObservable {
             liftInProcess = true;
             if (!floorRequestsGoingUp.isEmpty()) {
                 for (Iterator i = floorRequestsGoingUp.iterator(); i.hasNext(); ) {
-                    Integer floorServing = (Integer)i.next();
+                    Integer floorServing = (Integer) i.next();
                     log.info("Lift Id {} " + this.id + " is going up serving request to floor {} " + floorServing);
                     floorRequestsGoingUp.remove(new Integer(floorServing));
                     //It will be a call to the lift motor to start moving to the requested floor
                 }
-            } else if(!flooRequestsGoingDown.isEmpty()) {
+            } else if (!flooRequestsGoingDown.isEmpty()) {
                 for (Iterator i = flooRequestsGoingDown.iterator(); i.hasNext(); ) {
                     Integer floorServing = (Integer) i.next();
                     log.info("Lift Id {} " + this.id + " is going down serving request to floor {} " + floorServing);
@@ -129,8 +250,7 @@ public class Lift extends BaseLift implements ILiftObservable {
             if (flooRequestsGoingDown.isEmpty() && floorRequestsGoingUp.isEmpty()) {
                 liftInProcess = false;
                 break;
-            }
-            else continue;
+            } else continue;
         }
     }
 }
