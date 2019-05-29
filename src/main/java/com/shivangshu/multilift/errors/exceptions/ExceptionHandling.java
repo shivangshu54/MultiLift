@@ -17,7 +17,7 @@ public class ExceptionHandling {
     }
 
     @ExceptionHandler(value = UnknownLiftStatusError.class)
-    public ResponseEntity<String> handleLiftNotFoundException(UnknownLiftStatusError e, WebRequest request) {
+    public ResponseEntity<String> handleUnknowLiftStatusRequest(UnknownLiftStatusError e, WebRequest request) {
         return new ResponseEntity<String>("Unknown Lift Status Request received",HttpStatus.BAD_REQUEST);
     }
 

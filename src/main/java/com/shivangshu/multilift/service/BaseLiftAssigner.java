@@ -7,7 +7,7 @@ import com.shivangshu.multilift.commons.LiftStore;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BaseLiftAssigner {
+public abstract class BaseLiftAssigner {
 
     protected static final List<Lift> liftsInService = LiftStore.getInstance().getLifts();
 
